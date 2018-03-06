@@ -4,6 +4,8 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
 
     // TODO: Add in a 1 time 4 digit pin that is 4 digits from the API key using local storage
     // TODO: Add in race conditions and refresh page if there are any concurrent updates
+    // TODO: Highlight today
+    // TODO filter by date better
 
     $scope.gridOptions = {
         enableFiltering: true
