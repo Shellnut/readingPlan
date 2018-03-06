@@ -27,16 +27,12 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
 
             appService.submit(id, data).then((result) => {
                 $scope.loading = false;
-                console.log(result);
             });
         });
 
     };
 
     $scope.loading = true;
-
-    var cellTemplate  =``;
-
 
     $scope.gridOptions.columnDefs = [
         {
@@ -45,8 +41,7 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
             filter: {
                 condition: uiGridConstants.filter.GREATER_THAN_OR_EQUAL,
                 placeholder: 'Month',
-                // term: '01'
-                // term: ('0' + (new Date().getMonth() + 1)).slice(-2)
+                term: ('0' + (new Date().getMonth() + 1)).slice(-2)
             },
         },
         {name: 'content', enableFiltering: false, cellTemplate: '<div class="ui-grid-cell-contents"><a target="_blank" href="http://esvapi.org/v2/rest/passageQuery?key=IP&passage={{row.entity.content}}&output-format=mp3">{{row.entity.content}}</a></div>'},
@@ -60,8 +55,6 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
 
     appService.getData().then((result) => {
 
-        console.log(JSON.stringify(result.data));
-
         $scope.loading = false;
 
         // New date
@@ -72,12 +65,16 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
         const today = `${month}/${day}/${year}`;
 
         // Get today
-        result.data.forEach((val, i) => {
+        result.data.forEach(val => {
             if (val.date === today) {
                 $scope.today = val;
             }
         });
         $scope.gridOptions.data = result.data;
+    });
+
+    appService.getPrayer().then(results => {
+        $scope.prayer = results.data[0].prayer;
     });
 
     $scope.selectReading = (val) => {
@@ -96,9 +93,8 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
             leal: val.leal,
         };
 
-        appService.submit(id, data).then((result) => {
+        appService.submit(id, data).then(() => {
             $scope.loading = false;
-            console.log(result);
         });
 
     };
@@ -108,9 +104,7 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
     };
 
     $scope.submitComment = () => {
-
         $scope.loading = true;
-
         const id = $scope.today._id.$oid;
         const data = {
             comments: $scope.today.comments,
@@ -122,19 +116,24 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
             kenny: $scope.today.kenny,
             leal: $scope.today.leal,
         };
-
-        appService.submit(id, data).then((result) => {
-
-            console.log(result);
-
+        appService.submit(id, data).then(() => {
             $scope.loading = false;
+        });
+    };
 
+    // Submit Prayer
+    $scope.submitPrayer = () => {
+        $scope.loading = true;
+        appService.setPrayer([{prayer: $scope.prayer}]).then(() => {
+            $scope.loading = false;
         });
     }
 
 }]);
 
-
+// appService.setPrayer({prayer: 'prayer'}).then(results => {
+//     $scope.loading = false;
+// });
 
 // function compare(a,b) {
 //     if (a.date < b.date)
