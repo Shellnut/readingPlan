@@ -1,6 +1,5 @@
 const app = angular.module('myApp', ['ui.grid', 'ui.grid.edit']);
 
-
 app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', function ($scope, $http, uiGridConstants, appService) {
 
     $scope.gridOptions = {
@@ -36,6 +35,9 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
 
     $scope.loading = true;
 
+    var cellTemplate  =``;
+
+
     $scope.gridOptions.columnDefs = [
         {
             name: 'date',
@@ -43,20 +45,22 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
             filter: {
                 condition: uiGridConstants.filter.GREATER_THAN_OR_EQUAL,
                 placeholder: 'Month',
+                // term: '01'
                 // term: ('0' + (new Date().getMonth() + 1)).slice(-2)
-                term: ('0' + (new Date().getMonth() + 1)).slice(-2)
             },
         },
         {name: 'content', enableFiltering: false, cellTemplate: '<div class="ui-grid-cell-contents"><a target="_blank" href="http://esvapi.org/v2/rest/passageQuery?key=IP&passage={{row.entity.content}}&output-format=mp3">{{row.entity.content}}</a></div>'},
-        {name: 'josh', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: '<input type="checkbox" ng-click="grid.appScope.checkBox(row.entity)" ng-model="row.entity.josh">'},
-        {name: 'corey', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: '<input type="checkbox" ng-click="grid.appScope.checkBox(row.entity)" ng-model="row.entity.corey">'},
-        {name: 'kenny', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: '<input type="checkbox" ng-click="grid.appScope.checkBox(row.entity)" ng-model="row.entity.kenny">'},
-        {name: 'devon', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: '<input type="checkbox" ng-click="grid.appScope.checkBox(row.entity)" ng-model="row.entity.devon">'},
-        {name: 'leal', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: '<input type="checkbox" ng-click="grid.appScope.checkBox(row.entity)" ng-model="row.entity.leal">'},
+        {name: 'josh', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: '<div class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.josh"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>'},
+        {name: 'corey', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: '<div class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.corey"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>'},
+        {name: 'kenny', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: '<div class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.kenny"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>'},
+        {name: 'devon', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: '<div class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.devon"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>'},
+        {name: 'leal', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: '<div class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.leal"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>'},
         {name: 'comments', enableFiltering: false, cellEditableCondition: false, cellTemplate: '<div class="ui-grid-cell-contents"><button class="btn btn-primary btn-xs" ng-click="grid.appScope.commentBtn(row.entity)"><i class="fa fa-circle"></i></button></div>'}
     ];
 
     appService.getData().then((result) => {
+
+        console.log(JSON.stringify(result.data));
 
         $scope.loading = false;
 
@@ -76,7 +80,7 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
         $scope.gridOptions.data = result.data;
     });
 
-    $scope.checkBox = (val) => {
+    $scope.selectReading = (val) => {
 
         $scope.loading = true;
 
@@ -102,7 +106,6 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
     $scope.commentBtn = (val) => {
         $scope.today = val;
     };
-
 
     $scope.submitComment = () => {
 
@@ -132,6 +135,16 @@ app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', 
 }]);
 
 
+
+// function compare(a,b) {
+//     if (a.date < b.date)
+//         return -1;
+//     if (a.date > b.date)
+//         return 1;
+//     return 0;
+// }
+//
+// var b = a.sort(compare);
 
 // var b = a.map(val => {
 //
