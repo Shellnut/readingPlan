@@ -2,6 +2,9 @@ const app = angular.module('myApp', ['ui.grid', 'ui.grid.edit']);
 
 app.controller('homeCtrl', ['$scope', '$http', 'uiGridConstants', 'appService', function ($scope, $http, uiGridConstants, appService) {
 
+    // TODO: Add in a 1 time 4 digit pin that is 4 digits from the API key using local storage
+    // TODO: Add in race conditions and refresh page if there are any concurrent updates
+
     $scope.gridOptions = {
         enableFiltering: true
     };
