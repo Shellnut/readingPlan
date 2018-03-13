@@ -288,7 +288,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     // Submit Prayer
     $scope.submitPrayer = () => {
         $scope.loading = true;
-        appService.setPrayer(pin, [{prayer: $scope.prayer}]).then(() => {
+        appService.setPrayer($scope.pin, [{prayer: $scope.prayer}]).then(() => {
             $scope.loading = false;
         });
     }
