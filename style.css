@@ -3,3 +3,11 @@
 select.select {
     border: 1px solid black;
 }
+
+div.bg-success {
+    background: #dff0d8;
+}
+
+.ui-grid-row:hover .ui-grid-cell {
+    background-color: beige;
+}

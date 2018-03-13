@@ -14,29 +14,39 @@
 
 <h1>2018 Bible Reading Plan <span class="text-muted" ng-show="loading"><i class="fa fa-spinner fa-spin"></i></span></h1>
 
-<!--ADD MULTI COLUMNS FOR 3 HOUR SNAPSHOT?-->
-<div class="col-sm-12">
+<div class="col-sm-12" ng-show="pin && !error">
     <div ui-grid="gridOptions" ui-grid-edit class="grid"></div>
-
     <br>
-
     <div>
         <div class="form-group">
             <div class="col-sm-7">
                 <label for="text">{{today.content}} Comments</label>
-                <textarea class="form-control" ng-model="today.comments" id="text" rows="10"></textarea><br>
+                <textarea class="form-control" ng-model="today.comments" id="text" rows="13"></textarea><br>
                 <button class="btn btn-primary" ng-disabled="loading" ng-click="submitComment()">Submit</button>
             </div>
             <div class="col-sm-5">
                 <label for="prayer">Prayer</label>
-                <textarea class="form-control" ng-model="prayer" id="prayer" rows="10"></textarea><br>
+                <textarea class="form-control" ng-model="prayer" id="prayer" rows="13"></textarea><br>
                 <button class="btn btn-primary" ng-disabled="loading" ng-click="submitPrayer()">Submit</button>
             </div>
-
         </div>
-
     </div>
+</div>
 
+<div class="col-sm-12" ng-show="error">
+    <p>{{error}}</p>
+</div>
+
+<div class="col-sm-12" ng-show="!pin">
+    <div class="form-group">
+        <label for="pin">Enter Pin (case sensitive):</label>
+        <input type="text" class="form-control" id="pin" ng-model="pinInput">
+        <br>
+        <label for="name">Enter Name:</label>
+        <input type="text" class="form-control" id="name" ng-model="nameInput">
+        <br>
+        <button class="btn btn-primary" ng-disabled="!nameInput || !pinInput" ng-click="submitPin()">Submit</button>
+    </div>
 </div>
 
 </body>
@@ -44,7 +54,9 @@
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script src="https://rawgit.com/msrikanth508/uiGridInlineEditPOC/master/Js/vendor/angular.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular-route.min.js"></script>
 <script src="https://cdn.rawgit.com/angular-ui/bower-ui-grid/master/ui-grid.min.js"></script>
+<script data-require="async.js@*" data-semver="2.1.1" src="https://cdnjs.cloudflare.com/ajax/libs/async/2.1.1/async.min.js"></script>
 <script src="script.js"></script>
 <script src="services/service.js"></script>
 
