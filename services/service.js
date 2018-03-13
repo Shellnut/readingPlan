@@ -1,17 +1,21 @@
 app.service('appService', ['$http',  function($http) {
 
     const url = 'https://api.mongolab.com/api/1/databases/mydb/collections/';
-    const apiKey = `?apiKey=7dwZtQjBFYhef4N4WHi6xuTnveN46vNQ`;
+    const apiKey = `?apiKey=7dwZtQjBFYhef4N4WHi6xuTnveN4{pin}`;
 
     // Reading plan data
-    this.getData = () => $http.get(`${url}readingPlan${apiKey}`);
-    this.submit = (id, data) => $http.put(`${url}readingPlan/${id}${apiKey}`, data);
+    this.getData = (pin) => $http.get(`${url}readingPlan${apiKey.replace('{pin}', pin)}`);
+    this.submit = (pin, id, data) => $http.put(`${url}readingPlan/${id}${apiKey.replace('{pin}', pin)}`, data);
 
     // Prayer
-    this.getPrayer = () => $http.get(`${url}prayer${apiKey}`);
-    this.setPrayer = (data) => $http.put(`${url}prayer${apiKey}`, data);
+    this.getPrayer = (pin) => $http.get(`${url}prayer${apiKey.replace('{pin}', pin)}`);
+    this.setPrayer = (pin, data) => $http.put(`${url}prayer${apiKey.replace('{pin}', pin)}`, data);
+
+    // Daily message status
+    this.setMessageStatus = (pin, data) => $http.put(`${url}messageStatus${apiKey.replace('{pin}', pin)}`, data);
+    this.getMessageStatus = (pin) => $http.get(`${url}messageStatus${apiKey.replace('{pin}', pin)}`);
 
     // Storing data
-    this.putData = (data) => $http.put(`${url}readingPlan${apiKey}`, data);
+    this.putAllData = (pin, data) => $http.put(`${url}readingPlan${apiKey.replace('{pin}', pin)}`, data);
 
 }]);
