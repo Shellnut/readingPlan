@@ -12,7 +12,9 @@
 
 <body ng-app="myApp" ng-controller="homeCtrl" class="container-fluid">
 
-<h1>2018 Bible Reading Plan <span class="text-muted" ng-show="loading"><i class="fa fa-spinner fa-spin"></i></span></h1>
+<h1>2018 Bible Reading Plan<span class="text-muted" ng-show="loading">&nbsp;<i class="fa fa-spinner fa-spin"></i></span></h1>
+<h5 class="welcome">Welcome, {{name}}!</h5>
+<h1 ng-if="raceCondition" class="text-danger" ng-bind="'Warning! Someone else posted changes. Please copy your changes, refresh the page and then post your work.'"></h1>
 
 <div class="col-sm-12" ng-show="pin && !error">
     <div ui-grid="gridOptions" ui-grid-edit class="grid"></div>
@@ -22,12 +24,12 @@
             <div class="col-sm-7">
                 <label for="text">{{today.content}} Comments</label>
                 <textarea class="form-control" ng-model="today.comments" id="text" rows="13"></textarea><br>
-                <button class="btn btn-primary" ng-disabled="loading" ng-click="submitComment()">Submit</button>
+                <button class="btn btn-primary" ng-disabled="loading || raceCondition" ng-click="submitComment()">Submit</button>
             </div>
             <div class="col-sm-5">
                 <label for="prayer">Prayer</label>
                 <textarea class="form-control" ng-model="prayer" id="prayer" rows="13"></textarea><br>
-                <button class="btn btn-primary" ng-disabled="loading" ng-click="submitPrayer()">Submit</button>
+                <button class="btn btn-primary" ng-disabled="loading || raceCondition" ng-click="submitPrayer()">Submit</button>
             </div>
         </div>
     </div>

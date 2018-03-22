@@ -2,13 +2,15 @@ const app = angular.module('myApp', ['ngRoute', 'ui.grid', 'ui.grid.edit']);
 
 app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'appService', function ($scope, $http, $window, uiGridConstants, appService) {
 
-    // TODO: Add in a 1 time 4 digit pin that is 4 digits from the API key using local storage
+    // DONE: TODO: Add in a 1 time 4 digit pin that is 4 digits from the API key using local storage
     // TODO: Add in race conditions and refresh page if there are any concurrent updates
-    // TODO: Highlight today
-    // TODO filter by date better
+    // DONE: TODO: Highlight today
+    // DONE: TODO filter by date better
+    // TODO: Add colors by person
 
     // variables
     let messagesStatus;
+    let sessionTime = new Date().getTime();
 
     // New date
     const date = new Date();
@@ -24,13 +26,12 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     const fiveDaysAgoYear = fiveDaysAgoDate.getUTCFullYear(); // 2017, 2018, etc.
     const fiveDaysAgoToday = `${fiveDaysAgoMonth}/${fiveDaysAgoDay}/${fiveDaysAgoYear}`;
 
-
-
     // Default Params
     $scope.pin = localStorage.getItem('pin') || '';
     $scope.name = localStorage.getItem('name') || '';
     $scope.loading = true;
     $scope.error = '';
+    $scope.raceCondition = false;
 
     // Submit Pin
     $scope.submitPin = () => {
@@ -52,29 +53,52 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
         $scope.gridApi = gridApi;
 
         gridApi.edit.on.afterCellEdit($scope, function (val) {
+
+            // Set loading to true
             $scope.loading = true;
-
+            // Get and set params
             const id = val._id.$oid;
-            const data = {
-                comments: val.comments,
-                content: val.content,
-                corey: val.corey,
-                date: val.date,
-                devon: val.devon,
-                josh: val.josh,
-                kenny: val.kenny,
-                leal: val.leal,
-            };
+            val.color = getColor();
+            let raceCondition = false;
 
-            appService.submit($scope.pin, id, data).then(() => {
+            async.series([
+                (cb_0) => {
+                    appService.getDailyData($scope.pin, id).then((results) => {
+                        // Get race condition status
+                        raceCondition = checkRaceCondition(results.data);
+                        cb_0(null);
+                    }, (err) => {
+                        cb_0(err);
+                    });
+                },
+                (cb_0) => {
+                    if (raceCondition) {
+                        $scope.raceCondition = true;
+                        cb_0(null);
+                    }
+                    else {
+                        // Set Data
+                        const data = setData(val, true);
+                        // Submit Data
+                        appService.submit($scope.pin, id, data).then(() => {
+                            cb_0(null);
+                        }, (err) => {
+                            cb_0(err);
+                        });
+                    }
+                },
+            ], (err) => {
                 $scope.loading = false;
+                if (err) {
+                    $scope.error = 'Something went wrong. Please refresh ' + JSON.stringify(err);
+                }
             });
+
         });
 
     };
 
     // Column defaults
-
     const setColumnDefs = () => {
         $scope.gridOptions.columnDefs = [
             {
@@ -87,23 +111,21 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                 },
                 cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}">{{row.entity.date === '${today}' ? row.entity.date + ' Today' : row.entity.date }}</div>`
             },
-            {name: 'content', enableFiltering: false, cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" ><a target="_blank" href="http://esvapi.org/v2/rest/passageQuery?key=IP&passage={{row.entity.content}}&output-format=mp3">{{row.entity.content}}</a></div>`},
-            {name: 'josh', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.josh"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
-            {name: 'corey', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.corey"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
-            {name: 'kenny', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.kenny"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
-            {name: 'devon', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.devon"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
-            {name: 'leal', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.leal"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
+            {name: 'content', enableFiltering: false, cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" ><a target="_blank" ng-style="{color: row.entity.color || ''}" href="http://esvapi.org/v2/rest/passageQuery?key=IP&passage={{row.entity.content}}&output-format=mp3">{{row.entity.content}}</a></div>`},
+            {name: 'josh', headerCellClass: 'josh', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.josh"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
+            {name: 'corey', headerCellClass: 'corey', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.corey"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
+            {name: 'kenny', headerCellClass: 'kenny', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.kenny"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
+            {name: 'devon', headerCellClass: 'devon', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.devon"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
+            {name: 'leal', headerCellClass: 'leal', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.leal"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
             {name: 'comments', enableFiltering: false, cellEditableCondition: false, cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}"><button class="btn btn-xs" ng-class="row.entity.unread ? 'btn-danger' : 'btn-primary'" ng-click="grid.appScope.commentBtn(row.entity); row.entity.unread=false"><i class="fa fa-circle"></i></button></div>`}
         ];
     };
 
-
-
     // Get the data from the DB
-    const getData = () => {
-
+    const getAllData = () => {
+        // Only get data if pin exists
         if ($scope.pin) {
-
+            // Steps to get data
             async.series([
                 // Step X: Get User Info
                 (cb_0) => {
@@ -134,7 +156,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                 },
                 // Step X: Get Data
                 (cb_0) => {
-                    appService.getData($scope.pin).then((result) => {
+                    appService.getAllData($scope.pin).then((result) => {
                             // Get today
                             result.data.forEach((val, i) => {
                                 if (val.date === today) {
@@ -173,29 +195,47 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
         }
 
     };
-    getData();
+    getAllData();
 
     // Submit '', X, R daily reading
     $scope.selectReading = (val) => {
 
+        // Set loading to true and get/set data
         $scope.loading = true;
-
+        let raceCondition = false;
         const id = val._id.$oid;
-        const data = {
-            comments: val.comments,
-            content: val.content,
-            corey: val.corey,
-            date: val.date,
-            devon: val.devon,
-            josh: val.josh,
-            kenny: val.kenny,
-            leal: val.leal,
-        };
 
-        appService.submit($scope.pin, id, data).then(() => {
+        async.series([
+            (cb_0) => {
+                appService.getDailyData($scope.pin, id).then((results) => {
+                    // Get race condition status
+                    raceCondition = checkRaceCondition(results.data);
+                    cb_0(null);
+                }, (err) => {
+                    cb_0(err);
+                });
+            },
+            (cb_0) => {
+                if (raceCondition) {
+                    $scope.raceCondition = true;
+                    cb_0(null);
+                }
+                else {
+                    const data = setData(val, true);
+                    // Submit data
+                    appService.submit($scope.pin, id, data).then(() => {
+                        cb_0(null);
+                    }, (err) => {
+                        cb_0(err);
+                    });
+                }
+            }
+        ], (err) => {
             $scope.loading = false;
+            if (err) {
+                $scope.error = 'Something went wrong. Please refresh ' + JSON.stringify(err);
+            }
         });
-
     };
 
     // Change day
@@ -227,54 +267,73 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
         // Set loading equal to true
         $scope.loading = true;
 
+        // check race condition
+        let raceCondition = false;
+
         // Set data to be updated in the comment field
         const id = $scope.today._id.$oid;
-        const data = {
-            comments: $scope.today.comments,
-            content: $scope.today.content,
-            corey: $scope.today.corey,
-            date: $scope.today.date,
-            devon: $scope.today.devon,
-            josh: $scope.today.josh,
-            kenny: $scope.today.kenny,
-            leal: $scope.today.leal,
-        };
 
+        // Set data and set newLastUpdate
+        const data = setData($scope.today, true);
 
+        // Async submit
         async.series([
-            // Step #1: Save comment
+            // Step #0: Check race condition
             (cb_0) => {
-                appService.submit($scope.pin, id, data).then(() => {
+                appService.getDailyData($scope.pin, id).then((results) => {
+                    // Get race condition status
+                    raceCondition = checkRaceCondition(results.data);
+                    // Move onto next one
                     cb_0(null);
                 }, (err) => {
                     cb_0(err);
                 });
+            },
+            // Step #1: Save comment
+            (cb_0) => {
+                if (raceCondition) {
+                    $scope.raceCondition = true;
+                    cb_0(null);
+                }
+                else {
+                    appService.submit($scope.pin, id, data).then(() => {
+                        cb_0(null);
+                    }, (err) => {
+                        cb_0(err);
+                    });
+                }
             },
             // Step #2: Inject unread into others
             (cb_0) => {
-                // Inject into others
-                for (let val in messagesStatus) {
-                    if (messagesStatus.hasOwnProperty(val)) {
-                        if (val !== $scope.name && !val.includes('_')) {
-                            const index = messagesStatus[val].indexOf($scope.today.date);
-                            // Only push if it doesn't exist
-                            if (index < 0) {
-                                messagesStatus[val].push($scope.today.date);
+                // Check for race condition
+                if (raceCondition) {
+                    $scope.raceCondition = true;
+                    cb_0(null);
+                }
+                else {
+                    // Inject into others
+                    for (let val in messagesStatus) {
+                        if (messagesStatus.hasOwnProperty(val)) {
+                            if (val !== $scope.name && !val.includes('_')) {
+                                const index = messagesStatus[val].indexOf($scope.today.date);
+                                // Only push if it doesn't exist
+                                if (index < 0) {
+                                    messagesStatus[val].push($scope.today.date);
+                                }
                             }
                         }
+                        else {
+                            messagesStatus[val] = [$scope.today.date];
+                        }
                     }
-                    else {
-                        messagesStatus[val] = [$scope.today.date];
-                    }
+                    // Ship off message status to DB
+                    appService.setMessageStatus($scope.pin, messagesStatus).then(() => {
+                        cb_0(null);
+                    }, (err) => {
+                        cb_0(err);
+                    });
                 }
-                // Ship off message status to DB
-                appService.setMessageStatus($scope.pin, messagesStatus).then(() => {
-                    cb_0(null);
-                }, (err) => {
-                    cb_0(err);
-                });
             },
-
         ], (err) => {
             $scope.loading = false;
             if (err) {
@@ -287,10 +346,100 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
 
     // Submit Prayer
     $scope.submitPrayer = () => {
+
         $scope.loading = true;
-        appService.setPrayer($scope.pin, [{prayer: $scope.prayer}]).then(() => {
+        let raceCondition = false;
+
+        async.series([
+            // Step #1: Get DB prayer and check for race condition
+            (cb_0) => {
+                // Get prayer
+                appService.getPrayer($scope.pin).then((results) => {
+                    // Check race condition
+                    raceCondition = checkRaceCondition(results.data[0]);
+                    cb_0(null);
+                }, (err) => {
+                    // Send error if there's an error
+                    cb_0(err);
+                });
+            },
+            // Step #2: Set prayer
+            (cb_0) => {
+                // Check for race condition
+                if (raceCondition) {
+                    $scope.raceCondition = true;
+                    cb_0(null);
+                }
+                else {
+                    // Set prayer data
+                    const prayerData = [{
+                        prayer: $scope.prayer,
+                        lastUpdatedName: $scope.name,
+                        lastUpdatedTime: new Date().getTime()
+                    }];
+                    // Set prayer
+                    appService.setPrayer($scope.pin, prayerData).then(() => {
+                        // Finish request
+                        cb_0(null);
+                    }, (err) => {
+                        // Send error if there's an error
+                        cb_0(err);
+                    });
+                }
+
+            }
+        ], (err)=> {
             $scope.loading = false;
+            if (err) {
+                // Set error to false
+                $scope.error = 'Something went wrong. Please refresh ' + JSON.stringify(err);
+            }
         });
+    };
+
+    // Check race condition
+    const checkRaceCondition = (data) => {
+        // Vars
+        let raceCondition = false;
+        const lastUpdatedName = data.lastUpdatedName || $scope.name;
+        const lastUpdatedTime = data.lastUpdatedTime || new Date(0).getTime();
+        // Check if last update was you
+        if (lastUpdatedName !== $scope.name) {
+            if (lastUpdatedTime > sessionTime) {
+                raceCondition = true;
+            }
+        }
+        // Return race condition
+        return raceCondition;
+    };
+
+    // Get the color of the user for the colors of the reading content
+    const getColor = () => {
+        const nameColors = {
+            devon: 'black',
+            leal: 'brown',
+            corey: 'green',
+            kenny: 'orange',
+            josh: 'navy'
+        };
+        return nameColors[$scope.name];
+    };
+
+    // Generic set data
+    const setData = (data, newLastUpdate) => {
+        return {
+            comments: data.comments,
+            content: data.content,
+            corey: data.corey,
+            date: data.date,
+            devon: data.devon,
+            josh: data.josh,
+            kenny: data.kenny,
+            leal: data.leal,
+            color: data.color || getColor(),
+            lastUpdatedName: newLastUpdate ? $scope.name : data.lastUpdatedName,
+            lastUpdatedTime: newLastUpdate ? new Date().getTime(): data.lastUpdatedTime
+    };
     }
 
 }]);
