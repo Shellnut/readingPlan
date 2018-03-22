@@ -11,3 +11,27 @@ div.bg-success {
 .ui-grid-row:hover .ui-grid-cell {
     background-color: beige;
 }
+
+.welcome {
+    text-transform: capitalize;
+}
+
+.devon {
+    color: black;
+}
+
+.leal {
+    color: brown;
+}
+
+.corey {
+    color: green;
+}
+
+.kenny {
+    color: orange;
+}
+
+.josh {
+    color: navy;
+}

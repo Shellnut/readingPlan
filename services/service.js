@@ -4,7 +4,8 @@ app.service('appService', ['$http',  function($http) {
     const apiKey = `?apiKey=7dwZtQjBFYhef4N4WHi6xuTnveN4{pin}`;
 
     // Reading plan data
-    this.getData = (pin) => $http.get(`${url}readingPlan${apiKey.replace('{pin}', pin)}`);
+    this.getAllData = (pin) => $http.get(`${url}readingPlan${apiKey.replace('{pin}', pin)}`);
+    this.getDailyData = (pin, id) => $http.get(`${url}readingPlan/${id}${apiKey.replace('{pin}', pin)}`);
     this.submit = (pin, id, data) => $http.put(`${url}readingPlan/${id}${apiKey.replace('{pin}', pin)}`, data);
 
     // Prayer
