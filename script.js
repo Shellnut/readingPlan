@@ -397,6 +397,110 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
         });
     };
 
+    // $scope.updateMongoData = () => {
+        // console.log(tempData.data);
+        // const evenMoreTempData = tempData.data.map(val => {
+        //     return {
+        //         color: val.color,
+        //         comments: val.comments,
+        //         content: val.content,
+        //         corey: val.corey,
+        //         date: val.date,
+        //         devon: val.devon,
+        //         josh: val.josh,
+        //         kenny: val.kenny,
+        //         lastUpdatedName: val.lastUpdatedName,
+        //         lastUpdatedTime: val.lastUpdatedTime,
+        //         leal: val.leal
+        //     }
+        // });
+        //
+        // console.log(evenMoreTempData.slice(4, evenMoreTempData.length));
+        //
+        // appService.putAllData($scope.pin, updateData, (err, results) => {
+        //     if (err) {
+        //         console.log(err);
+        //     }
+        //     else {
+        //         console.log(results);
+        //     }
+        // })
+        // const evenMoreTempData = tempData.data.map(val => {
+        //     return {
+        //         color: val.color,
+        //         comments: val.comments,
+        //         content: val.content,
+        //         corey: val.corey,
+        //         date: val.date,
+        //         devon: val.devon,
+        //         josh: val.josh,
+        //         kenny: val.kenny,
+        //         lastUpdatedName: val.lastUpdatedName,
+        //         lastUpdatedTime: val.lastUpdatedTime,
+        //         leal: val.leal
+        //     }
+        // });
+        //
+        //
+        // const twentyNinteenData = [];
+        //
+        // // declaring variables
+        // var text = '';
+        // var year = 2019;
+        // var firstDay = new Date(year, 0, 1);
+        //
+        //
+        // readingPlan.forEach((val, index) => {
+        //
+        //     // Days
+        //     var curDay = new Date(firstDay.getTime() + (index * 1000 * 60 * 60 * 24));
+        //     var day = curDay.getDate();
+        //     var dayOfWeek = curDay.getDay();
+        //     var weekday;
+        //     var type;
+        //     if (dayOfWeek === 0) {
+        //         type = 'Gospels'; weekday = 'Sunday';
+        //     }
+        //     else if (dayOfWeek === 1) {
+        //         type = 'Law'; weekday = 'Monday';
+        //     }
+        //     else if (dayOfWeek === 2) {
+        //         type = 'History'; weekday = 'Tuesday';
+        //     }
+        //     else if (dayOfWeek === 3) {
+        //         type = 'Psalms'; weekday = 'Wednesday';
+        //     }
+        //     else if (dayOfWeek === 4) {
+        //         type = 'Poetry'; weekday = 'Thursday';
+        //     }
+        //     else if (dayOfWeek === 5) {
+        //         type = 'Prophecy'; weekday = 'Friday';
+        //     }
+        //     else if (dayOfWeek === 6) {
+        //         type = 'Epistles'; weekday = 'Saturday';
+        //     }
+        //
+        //     var month = curDay.getMonth() + 1;
+        //
+        //     twentyNinteenData.push({
+        //         color: "black",
+        //         comments: `${weekday} ${type}.`,
+        //         content: val,
+        //         corey: '',
+        //         date: `${month}/${day}/${year}`,
+        //         devon: '',
+        //         josh: '',
+        //         kenny: '',
+        //         leal: '',
+        //         lastUpdatedName: 'kenny',
+        //         lastUpdatedTime: 1543553009299
+        //     });
+        // });
+        //
+        // // send to dynamo
+        // const allData = evenMoreTempData.concat(twentyNinteenData);
+    // };
+
     // Check race condition
     const checkRaceCondition = (data) => {
         // Vars
@@ -439,7 +543,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
             color: data.color || getColor(),
             lastUpdatedName: newLastUpdate ? $scope.name : data.lastUpdatedName,
             lastUpdatedTime: newLastUpdate ? new Date().getTime(): data.lastUpdatedTime
-    };
+        };
     }
 
 }]);
