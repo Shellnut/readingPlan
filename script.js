@@ -19,12 +19,12 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     const year = date.getUTCFullYear(); // 2017, 2018, etc.
     const today = `${month}/${day}/${year}`;
 
-    // 5 days ago
-    const fiveDaysAgoDate = new Date(new Date() - (1000 * 60 * 60 * 24 * 5));
-    const fiveDaysAgoMonth = ('0' + (fiveDaysAgoDate.getMonth() + 1)).slice(-2); // add one because month starts at 0
-    const fiveDaysAgoDay = ('0' + fiveDaysAgoDate.getDate()).slice(-2); // 01, 02, etc.
-    const fiveDaysAgoYear = fiveDaysAgoDate.getUTCFullYear(); // 2017, 2018, etc.
-    const fiveDaysAgoToday = `${fiveDaysAgoMonth}/${fiveDaysAgoDay}/${fiveDaysAgoYear}`;
+    // 4 days ago
+    const fourDaysAgoDate = new Date(new Date() - (1000 * 60 * 60 * 24 * 4));
+    const fourDaysAgoMonth = ('0' + (fourDaysAgoDate.getMonth() + 1)).slice(-2); // add one because month starts at 0
+    const fourDaysAgoDay = ('0' + fourDaysAgoDate.getDate()).slice(-2); // 01, 02, etc.
+    const fourDaysAgoYear = fourDaysAgoDate.getUTCFullYear(); // 2017, 2018, etc.
+    const fourDaysAgoToday = `${fourDaysAgoMonth}/${fourDaysAgoDay}/${fourDaysAgoYear}`;
 
     // Default Params
     $scope.pin = localStorage.getItem('pin') || '';
@@ -107,7 +107,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                 filter: {
                     condition: (searchTerm, cellValue) => new Date(searchTerm.split(String.fromCharCode(92)).join('')) <= new Date(cellValue),
                     placeholder: 'date',
-                    term: fiveDaysAgoToday,
+                    term: fourDaysAgoToday,
                 },
                 cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}">{{row.entity.date === '${today}' ? row.entity.date + ' Today' : row.entity.date }}</div>`
             },
