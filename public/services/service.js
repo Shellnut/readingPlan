@@ -1,6 +1,6 @@
 app.service('appService', ['$http',  function($http) {
 
-    const env = 'reading-plan-dev';
+    const env = 'mydb';
     const url = `https://api.mongolab.com/api/1/databases/${env}/collections/`;
     const apiKey = `?apiKey=7dwZtQjBFYhef4N4WHi6xuTnveN4{pin}`;
 
