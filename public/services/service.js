@@ -1,6 +1,7 @@
 app.service('appService', ['$http',  function($http) {
 
-    const url = 'https://api.mongolab.com/api/1/databases/mydb/collections/';
+    const env = 'reading-plan-dev';
+    const url = `https://api.mongolab.com/api/1/databases/${env}/collections/`;
     const apiKey = `?apiKey=7dwZtQjBFYhef4N4WHi6xuTnveN4{pin}`;
 
     // Reading plan data

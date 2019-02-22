@@ -8,6 +8,9 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     // DONE: TODO filter by date better
     // TODO: Add colors by person
 
+    // Define socket
+    const socket = io();
+
     // variables
     let messagesStatus;
     let sessionTime = new Date().getTime();
@@ -18,6 +21,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     const day = ('0' + date.getDate()).slice(-2); // 01, 02, etc.
     const year = date.getUTCFullYear(); // 2017, 2018, etc.
     const today = `${month}/${day}/${year}`;
+    $scope.year = year;
 
     // 4 days ago
     const fiveDaysAgoDate = new Date(new Date() - (1000 * 60 * 60 * 24 * 4));
@@ -131,8 +135,13 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                 (cb_0) => {
                     // Get Message Status
                     appService.getMessageStatus($scope.pin).then(results => {
-                        messagesStatus = results.data[0] || cb_0(' Error: Can\'t find getMessageStatus data. Please refresh');
-                        cb_0(null);
+                        if (results.data[0]) {
+                            messagesStatus = results.data[0];
+                            cb_0(null);
+                        }
+                        else {
+                            cb_0(' Error: Can\'t find getMessageStatus data. Please refresh')
+                        }
                     }, (err) => {
                         cb_0(err);
                     });
@@ -396,6 +405,34 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
             }
         });
     };
+
+    // Update prayer
+    $scope.prayerBox = () => {
+        socket.emit('prayer', $scope.prayer);
+    };
+
+    // Update Prayer
+    socket.on('prayer', function(msg) {
+        console.log('prayer is now', msg);
+        $scope.$apply(function () {
+            $scope.prayer = msg;
+        });
+    });
+
+    // Update today's comments prayer
+    $scope.commentBox = () => {
+        socket.emit('comments', { comments: $scope.today.comments, date: $scope.today.date });
+    };
+
+    // Update Prayer
+    socket.on('comments', function(msg) {
+        console.log($scope.today.date, msg.date);
+        if ($scope.today.date === msg.date) {
+            $scope.$apply(function () {
+                $scope.today.comments = msg.comments;
+            });
+        }
+    });
 
     // $scope.updateMongoData = () => {
         // console.log(tempData.data);

@@ -12,7 +12,7 @@
 
 <body ng-app="myApp" ng-controller="homeCtrl" class="container-fluid">
 
-<h1>2019 Bible Reading Plan<span class="text-muted" ng-show="loading">&nbsp;<i class="fa fa-spinner fa-spin"></i></span></h1>
+<h1>{{year}} Bible Reading Plan<span class="text-muted" ng-show="loading">&nbsp;<i class="fa fa-spinner fa-spin"></i></span></h1>
 <h5 class="welcome">Welcome, {{name}}!</h5>
 <h1 ng-if="raceCondition" class="text-danger" ng-bind="'Warning! Someone else posted changes. Please copy your changes, refresh the page and then post your work.'"></h1>
 
@@ -23,12 +23,12 @@
         <div class="form-group">
             <div class="col-sm-7">
                 <label for="text">{{today.content}} Comments</label>
-                <textarea class="form-control" ng-model="today.comments" id="text" rows="13"></textarea><br>
+                <textarea class="form-control" ng-model="today.comments" ng-change="commentBox()" id="text" rows="13"></textarea><br>
                 <button class="btn btn-primary" ng-disabled="loading || raceCondition" ng-click="submitComment()">Submit</button>
             </div>
             <div class="col-sm-5">
                 <label for="prayer">Prayer</label>
-                <textarea class="form-control" ng-model="prayer" id="prayer" rows="13"></textarea><br>
+                <textarea class="form-control" ng-model="prayer" ng-change="prayerBox()" id="prayer" rows="13"></textarea><br>
                 <button class="btn btn-primary" ng-disabled="loading || raceCondition" ng-click="submitPrayer()">Submit</button>
             </div>
         </div>
@@ -53,6 +53,7 @@
 
 </body>
 
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script src="https://rawgit.com/msrikanth508/uiGridInlineEditPOC/master/Js/vendor/angular.js"></script>
