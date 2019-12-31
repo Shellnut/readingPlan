@@ -19,8 +19,8 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     const year = date.getUTCFullYear(); // 2017, 2018, etc.
     const today = `${month}/${day}/${year}`;
 
-    // 4 days ago
-    const fiveDaysAgoDate = new Date(new Date() - (1000 * 60 * 60 * 24 * 4));
+    // 5 days ago
+    const fiveDaysAgoDate = new Date(new Date() - (1000 * 60 * 60 * 24 * 5));
     const fiveDaysAgoMonth = ('0' + (fiveDaysAgoDate.getMonth() + 1)).slice(-2); // add one because month starts at 0
     const fiveDaysAgoDay = ('0' + fiveDaysAgoDate.getDate()).slice(-2); // 01, 02, etc.
     const fiveDaysAgoYear = fiveDaysAgoDate.getUTCFullYear(); // 2017, 2018, etc.
@@ -32,6 +32,9 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     $scope.loading = true;
     $scope.error = '';
     $scope.raceCondition = false;
+    $scope.years = ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
+    $scope.year = localStorage.getItem('year') || new Date().getFullYear().toString();
+    localStorage.setItem('year', $scope.year); // update the year in local storage
 
     // Submit Pin
     $scope.submitPin = () => {
@@ -63,7 +66,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
 
             async.series([
                 (cb_0) => {
-                    appService.getDailyData($scope.pin, id).then((results) => {
+                    appService.getDailyData($scope.pin, $scope.year, id).then((results) => {
                         // Get race condition status
                         raceCondition = checkRaceCondition(results.data);
                         cb_0(null);
@@ -80,7 +83,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                         // Set Data
                         const data = setData(val, true);
                         // Submit Data
-                        appService.submit($scope.pin, id, data).then(() => {
+                        appService.submit($scope.pin, $scope.year, id, data).then(() => {
                             cb_0(null);
                         }, (err) => {
                             cb_0(err);
@@ -98,17 +101,24 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
 
     };
 
+    $scope.updateYear = function() {
+        localStorage.setItem('year', $scope.year); // update the year in local storage
+        location.reload();
+    }
+
     // Column defaults
     const setColumnDefs = () => {
         $scope.gridOptions.columnDefs = [
             {
                 name: 'date',
                 sort: { direction: 'asc', priority: 0 },
+                type: 'date',
                 filter: {
                     condition: (searchTerm, cellValue) => new Date(searchTerm.split(String.fromCharCode(92)).join('')) <= new Date(cellValue),
                     placeholder: 'date',
                     term: fiveDaysAgoToday,
                 },
+                cellEditableCondition: false,
                 cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}">{{row.entity.date === '${today}' ? row.entity.date + ' Today' : row.entity.date }}</div>`
             },
             {name: 'content', enableFiltering: true, cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" ><a target="_blank" ng-style="{color: row.entity.color || ''}" href="http://esvapi.org/v2/rest/passageQuery?key=IP&passage={{row.entity.content}}&output-format=mp3">{{row.entity.content}}</a></div>`},
@@ -156,17 +166,40 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                 },
                 // Step X: Get Data
                 (cb_0) => {
-                    appService.getAllData($scope.pin).then((result) => {
+                    appService.getAllData($scope.pin, $scope.year).then((result) => {
                             // Get today
+                            var dateIncluded = false;
                             result.data.forEach((val, i) => {
                                 if (val.date === today) {
                                     $scope.today = val;
+                                    dateIncluded = true;
                                     setColumnDefs();
                                 }
                                 if (messagesStatus[$scope.name] && messagesStatus[$scope.name].includes(val.date)) {
                                     result.data[i].unread = true;
                                 }
                             });
+
+                            // If today is not included, add it so the view doesn't break
+                            if (!dateIncluded) {
+                                console.log('warning: date is not included!!')
+                                result.data.push({
+                                    color: '',
+                                    comments: '',
+                                    content: '',
+                                    corey: '',
+                                    date: '12/30/2019',
+                                    devon: '',
+                                    josh: '',
+                                    kenny: '',
+                                    lastUpdatedName: '',
+                                    lastUpdatedTime: 1539143940824,
+                                    leal: ''
+                                })
+                            }
+
+                            console.log(result.data);
+
                             $scope.gridOptions.data = result.data;
                             cb_0(null);
                     });
@@ -174,8 +207,13 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                 // Step X: Get Prayer Requests
                 (cb_0) => {
                     // Get prayer
-                    appService.getPrayer($scope.pin).then(results => {
-                        $scope.prayer = results.data[0].prayer;
+                    appService.getPrayer($scope.pin, $scope.year).then(results => {
+                        if (results.data.length < 1) {
+                            $scope.prayer = '';   
+                        }
+                        else {
+                            $scope.prayer = results.data[0].prayer;
+                        }
                         cb_0(null);
                     }, (err) => {
                         cb_0(err)
@@ -207,7 +245,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
 
         async.series([
             (cb_0) => {
-                appService.getDailyData($scope.pin, id).then((results) => {
+                appService.getDailyData($scope.pin, $scope.year, id).then((results) => {
                     // Get race condition status
                     raceCondition = checkRaceCondition(results.data);
                     cb_0(null);
@@ -223,7 +261,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                 else {
                     const data = setData(val, true);
                     // Submit data
-                    appService.submit($scope.pin, id, data).then(() => {
+                    appService.submit($scope.pin, $scope.year, id, data).then(() => {
                         cb_0(null);
                     }, (err) => {
                         cb_0(err);
@@ -280,7 +318,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
         async.series([
             // Step #0: Check race condition
             (cb_0) => {
-                appService.getDailyData($scope.pin, id).then((results) => {
+                appService.getDailyData($scope.pin, $scope.year, id).then((results) => {
                     // Get race condition status
                     raceCondition = checkRaceCondition(results.data);
                     // Move onto next one
@@ -296,7 +334,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                     cb_0(null);
                 }
                 else {
-                    appService.submit($scope.pin, id, data).then(() => {
+                    appService.submit($scope.pin, $scope.year, id, data).then(() => {
                         cb_0(null);
                     }, (err) => {
                         cb_0(err);
@@ -354,7 +392,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
             // Step #1: Get DB prayer and check for race condition
             (cb_0) => {
                 // Get prayer
-                appService.getPrayer($scope.pin).then((results) => {
+                appService.getPrayer($scope.pin, $scope.year).then((results) => {
                     // Check race condition
                     raceCondition = checkRaceCondition(results.data[0]);
                     cb_0(null);
@@ -378,7 +416,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                         lastUpdatedTime: new Date().getTime()
                     }];
                     // Set prayer
-                    appService.setPrayer($scope.pin, prayerData).then(() => {
+                    appService.setPrayer($scope.pin, $scope.year, prayerData).then(() => {
                         // Finish request
                         cb_0(null);
                     }, (err) => {
@@ -500,6 +538,50 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
         // // send to dynamo
         // const allData = evenMoreTempData.concat(twentyNinteenData);
     // };
+
+    // // Update mongo data 2 (used to make 2020 data)
+    // $scope.updateMongoData = function() {
+    //     var updateData = [];
+    //     for (var i=0; i<400; i++) {
+
+    //     var date = new Date();
+    //     date.setDate(date.getDate() + i);
+
+    //     var month = ('0' + (date.getMonth() + 1)).slice(-2); // add one because month starts at 0
+    //     var day = ('0' + date.getDate()).slice(-2); // 01, 02, etc.
+    //     var year = date.getUTCFullYear(); // 2017, 2018, etc.
+    //     var today = `${month}/${day}/${year}`;
+
+    //     var a = {
+    //         "comments": "",
+    //         "content": "Psalm " + (Math.floor(Math.random() * 150) + 1),
+    //         "corey": "",
+    //         "date": today,
+    //         "devon": "",
+    //         "josh": "",
+    //         "kenny": "",
+    //         "leal": "",
+    //         "color": "",
+    //         "lastUpdatedName": "",
+    //         "lastUpdatedTime": 1577631727281
+    //     };
+
+    //     updateData.push(a);
+
+    //     }
+
+    //     console.log($scope.pin, $scope.year, updateData);
+
+    //     appService.putAllData($scope.pin, $scope.year, updateData, (err, results) => {
+    //         if (err) {
+    //             console.log(err);
+    //         }
+    //         else {
+    //             console.log(results);
+    //         }
+    //     })
+
+    // }
 
     // Check race condition
     const checkRaceCondition = (data) => {
