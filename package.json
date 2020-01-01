@@ -9,7 +9,7 @@
     "author": "shellnut",
     "license": "ISC",
     "dependencies": {
-        "angular": "^1.6.6",
+        "angular": "^1.7.9",
         "angular-base64": "^2.0.5",
         "angular-bootstrap-multiselect": "^1.1.11",
         "angular-datetime-range": "^0.2.14",
