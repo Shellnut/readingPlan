@@ -12,8 +12,19 @@
 
 <body ng-app="myApp" ng-controller="homeCtrl" class="container-fluid">
 
-<h1>2019 Bible Reading Plan<span class="text-muted" ng-show="loading">&nbsp;<i class="fa fa-spinner fa-spin"></i></span></h1>
-<h5 class="welcome">Welcome, {{name}}!</h5>
+<!-- Button to update all data -->
+<!-- <hr><hr>
+<button class="btn btn-primary" ng-click="updateMongoData()">Click me!</button>
+<hr><hr> -->
+
+<h1>{{year}} Bible Reading Plan<span class="text-muted" ng-show="loading">&nbsp;<i class="fa fa-spinner fa-spin"></i></span></h1>
+<div ng-show="pin && !error">
+    Select Year: 
+    <select class="form-control" ng-model="year" ng-change="updateYear()">
+        <option ng-repeat="year in years track by year">{{year}}</option>
+    </select>
+    <h5 class="welcome">Welcome, {{name}}!</h5>
+</div>
 <h1 ng-if="raceCondition" class="text-danger" ng-bind="'Warning! Someone else posted changes. Please copy your changes, refresh the page and then post your work.'"></h1>
 
 <div class="col-sm-12" ng-show="pin && !error">
