@@ -16,14 +16,14 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     const date = new Date();
     const month = ('0' + (date.getMonth() + 1)).slice(-2); // add one because month starts at 0
     const day = ('0' + date.getDate()).slice(-2); // 01, 02, etc.
-    const year = date.getUTCFullYear(); // 2017, 2018, etc.
+    const year = date.getFullYear(); // 2017, 2018, etc.
     const today = `${month}/${day}/${year}`;
 
     // 5 days ago
     const fiveDaysAgoDate = new Date(new Date() - (1000 * 60 * 60 * 24 * 5));
     const fiveDaysAgoMonth = ('0' + (fiveDaysAgoDate.getMonth() + 1)).slice(-2); // add one because month starts at 0
     const fiveDaysAgoDay = ('0' + fiveDaysAgoDate.getDate()).slice(-2); // 01, 02, etc.
-    const fiveDaysAgoYear = fiveDaysAgoDate.getUTCFullYear(); // 2017, 2018, etc.
+    const fiveDaysAgoYear = fiveDaysAgoDate.getFullYear(); // 2017, 2018, etc.
     const fiveDaysAgoToday = `${fiveDaysAgoMonth}/${fiveDaysAgoDay}/${fiveDaysAgoYear}`;
 
     // Default Params
@@ -32,7 +32,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     $scope.loading = true;
     $scope.error = '';
     $scope.raceCondition = false;
-    $scope.years = ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
+    $scope.years = ['2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
     $scope.year = localStorage.getItem('year') || new Date().getFullYear().toString();
     localStorage.setItem('year', $scope.year); // update the year in local storage
 
@@ -116,7 +116,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                 filter: {
                     condition: (searchTerm, cellValue) => new Date(searchTerm.split(String.fromCharCode(92)).join('')) <= new Date(cellValue),
                     placeholder: 'date',
-                    term: fiveDaysAgoToday,
+                    term: $scope.year.toString() === year.toString() ? fiveDaysAgoToday : '',
                 },
                 cellEditableCondition: false,
                 cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}">{{row.entity.date === '${today}' ? row.entity.date + ' Today' : row.entity.date }}</div>`
@@ -180,26 +180,11 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                                 }
                             });
 
-                            // If today is not included, add it so the view doesn't break
+                            // If today is not included, set the column definitions so that the view doesn't break
                             if (!dateIncluded) {
-                                console.log('warning: date is not included!!')
-                                result.data.push({
-                                    color: '',
-                                    comments: '',
-                                    content: '',
-                                    corey: '',
-                                    date: '12/30/2019',
-                                    devon: '',
-                                    josh: '',
-                                    kenny: '',
-                                    lastUpdatedName: '',
-                                    lastUpdatedTime: 1539143940824,
-                                    leal: ''
-                                })
+                                setColumnDefs();
                             }
-
-                            console.log(result.data);
-
+ 
                             $scope.gridOptions.data = result.data;
                             cb_0(null);
                     });
@@ -581,6 +566,19 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     //         }
     //     })
 
+    // }
+
+    // used to update 2017 data
+    // $scope.updateMongoData = function() {
+    //     var _2017 = [];
+    //     appService.putAllData($scope.pin, 2017, _2017, (err, results) => {
+    //         if (err) {
+    //             console.log(err);
+    //         }
+    //         else {
+    //             console.log(results);
+    //         }
+    //     })   
     // }
 
     // Check race condition
