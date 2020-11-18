@@ -57,45 +57,8 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
 
         gridApi.edit.on.afterCellEdit($scope, function (val) {
 
-            // Set loading to true
-            $scope.loading = true;
-            // Get and set params
-            const id = val._id.$oid;
-            val.color = getColor();
-            let raceCondition = false;
-
-            async.series([
-                (cb_0) => {
-                    appService.getDailyData($scope.pin, $scope.year, id).then((results) => {
-                        // Get race condition status
-                        raceCondition = checkRaceCondition(results.data);
-                        cb_0(null);
-                    }, (err) => {
-                        cb_0(err);
-                    });
-                },
-                (cb_0) => {
-                    if (raceCondition) {
-                        $scope.raceCondition = true;
-                        cb_0(null);
-                    }
-                    else {
-                        // Set Data
-                        const data = setData(val, true);
-                        // Submit Data
-                        appService.submit($scope.pin, $scope.year, id, data).then(() => {
-                            cb_0(null);
-                        }, (err) => {
-                            cb_0(err);
-                        });
-                    }
-                },
-            ], (err) => {
-                $scope.loading = false;
-                if (err) {
-                    $scope.error = 'Something went wrong. Please refresh ' + JSON.stringify(err);
-                }
-            });
+            console.log(val);
+            $scope.submitData();
 
         });
 
@@ -129,6 +92,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
             {name: 'leal', headerCellClass: 'leal', enableFiltering: false, cellEditableCondition: false, type: 'boolean', cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.selectReading(row.entity)" ng-model="row.entity.leal"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`},
             {name: 'comments', enableFiltering: false, cellEditableCondition: false, cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}"><button class="btn btn-xs" ng-class="row.entity.unread ? 'btn-danger' : 'btn-primary'" ng-click="grid.appScope.commentBtn(row.entity); row.entity.unread=false"><i class="fa fa-circle"></i></button></div>`}
         ];
+        console.log($scope.gridOptions.columnDefs);
     };
 
     // Get the data from the DB
@@ -139,12 +103,15 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
             async.series([
                 // Step X: Get User Info
                 (cb_0) => {
-                    // Get Message Status
-                    appService.getMessageStatus($scope.pin).then(results => {
-                        messagesStatus = results.data[0] || cb_0(' Error: Can\'t find getMessageStatus data. Please refresh');
-                        cb_0(null);
-                    }, (err) => {
-                        cb_0(err);
+                    // Get Message Status2
+                    appService.getMessageStatus2((err, data) => {
+                        if (err) {
+                            cb_0(err);
+                        }
+                        else {
+                            messagesStatus = JSON.parse(data.Item.myData);
+                            cb_0(null);
+                        }
                     });
                 },
                 // Step X: Remove today's date
@@ -157,19 +124,35 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                         }
                     }
                     // Ship off message status to DB
-                    appService.setMessageStatus($scope.pin, messagesStatus).then(() => {
-                        cb_0(null);
-                    }, (err) => {
-                        $scope.error = err;
-                        cb_0(err);
+                    appService.setMessageStatus2(messagesStatus, (err, data) => {
+                        if (err) {
+                            console.log('err', err);
+                            $scope.error = err;
+                            cb_0(err);
+                        }
+                        else {
+                            console.log('setMessageStatus', data);
+                            cb_0(null);
+                        }
                     });
                 },
                 // Step X: Get Data
                 (cb_0) => {
-                    appService.getAllData($scope.pin, $scope.year).then((result) => {
-                            // Get today
+                    appService.getAllData2($scope.year, (err, data) => {
+
+                        if (err) {
+                            console.log('getAllData2 error', err);
+                            cb_0(err);
+                        }
+                        else {
+                            // Set the result
+                            var result = {
+                                data: JSON.parse(data.Item.myData)
+                            };
+
                             var dateIncluded = false;
                             result.data.forEach((val, i) => {
+                                console.log(val.date)
                                 if (val.date === today) {
                                     $scope.today = val;
                                     dateIncluded = true;
@@ -184,27 +167,42 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                             if (!dateIncluded) {
                                 setColumnDefs();
                             }
- 
+
+                            console.log('dynamo', result.data);
+
                             $scope.gridOptions.data = result.data;
+
                             cb_0(null);
+
+                        }
+
                     });
                 },
                 // Step X: Get Prayer Requests
                 (cb_0) => {
                     // Get prayer
-                    appService.getPrayer($scope.pin, $scope.year).then(results => {
-                        if (results.data.length < 1) {
-                            $scope.prayer = '';   
+                    appService.getPrayer2($scope.year, (err, data) => {
+                        if (err) {
+                            cb_0(err);
                         }
                         else {
-                            $scope.prayer = results.data[0].prayer;
+                            // Set the result
+                            var results = {
+                                data: data.Item.myData
+                            };
+                            if (results.data.length < 1) {
+                                $scope.prayer = '';   
+                            }
+                            else {
+                                $scope.prayer = results.data;
+                                console.log('prayer', $scope.prayer);
+                            }
+                            cb_0(null);
                         }
-                        cb_0(null);
-                    }, (err) => {
-                        cb_0(err)
-                    });
+                    })
                 }
             ], (err) => {
+                console.log('TEST');
                 $scope.loading = false;
                 if (err) {
                     $scope.error = 'Something went wrong. Please refresh ' + JSON.stringify(err);
@@ -220,381 +218,66 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     };
     getAllData();
 
-    // Submit '', X, R daily reading
-    $scope.selectReading = (val) => {
-
-        // Set loading to true and get/set data
-        $scope.loading = true;
-        let raceCondition = false;
-        const id = val._id.$oid;
-
-        async.series([
-            (cb_0) => {
-                appService.getDailyData($scope.pin, $scope.year, id).then((results) => {
-                    // Get race condition status
-                    raceCondition = checkRaceCondition(results.data);
-                    cb_0(null);
-                }, (err) => {
-                    cb_0(err);
-                });
-            },
-            (cb_0) => {
-                if (raceCondition) {
-                    $scope.raceCondition = true;
-                    cb_0(null);
-                }
-                else {
-                    const data = setData(val, true);
-                    // Submit data
-                    appService.submit($scope.pin, $scope.year, id, data).then(() => {
-                        cb_0(null);
-                    }, (err) => {
-                        cb_0(err);
-                    });
-                }
-            }
-        ], (err) => {
-            $scope.loading = false;
-            if (err) {
-                $scope.error = 'Something went wrong. Please refresh ' + JSON.stringify(err);
-            }
-        });
-    };
-
-    // Change day
-    $scope.commentBtn = (val) => {
-        $scope.today = val;
-        $scope.loading = true;
-
-        // Remove date from
-        if (messagesStatus.hasOwnProperty($scope.name)) {
-            const index = messagesStatus[$scope.name].indexOf(val.date);
-            if (index > -1) {
-                messagesStatus[$scope.name].splice(index, 1);
-            }
-        }
-
-        // Ship off message status to DB
-        appService.setMessageStatus($scope.pin, messagesStatus).then(() => {
-            $scope.loading = false;
-        }, (err) => {
-            $scope.loading = false;
-            $scope.error = err;
-        });
-
-    };
-
-    // Submit comment
-    $scope.submitComment = () => {
+    // Submit data
+    $scope.submitData = () => {
 
         // Set loading equal to true
         $scope.loading = true;
 
-        // check race condition
-        let raceCondition = false;
-
-        // Set data to be updated in the comment field
-        const id = $scope.today._id.$oid;
-
-        // Set data and set newLastUpdate
-        const data = setData($scope.today, true);
-
-        // Async submit
-        async.series([
-            // Step #0: Check race condition
-            (cb_0) => {
-                appService.getDailyData($scope.pin, $scope.year, id).then((results) => {
-                    // Get race condition status
-                    raceCondition = checkRaceCondition(results.data);
-                    // Move onto next one
-                    cb_0(null);
-                }, (err) => {
-                    cb_0(err);
-                });
-            },
-            // Step #1: Save comment
-            (cb_0) => {
-                if (raceCondition) {
-                    $scope.raceCondition = true;
-                    cb_0(null);
-                }
-                else {
-                    appService.submit($scope.pin, $scope.year, id, data).then(() => {
-                        cb_0(null);
-                    }, (err) => {
-                        cb_0(err);
-                    });
-                }
-            },
-            // Step #2: Inject unread into others
-            (cb_0) => {
-                // Check for race condition
-                if (raceCondition) {
-                    $scope.raceCondition = true;
-                    cb_0(null);
-                }
-                else {
-                    // Inject into others
-                    for (let val in messagesStatus) {
-                        if (messagesStatus.hasOwnProperty(val)) {
-                            if (val !== $scope.name && !val.includes('_')) {
-                                const index = messagesStatus[val].indexOf($scope.today.date);
-                                // Only push if it doesn't exist
-                                if (index < 0) {
-                                    messagesStatus[val].push($scope.today.date);
-                                }
-                            }
-                        }
-                        else {
-                            messagesStatus[val] = [$scope.today.date];
-                        }
-                    }
-                    // Ship off message status to DB
-                    appService.setMessageStatus($scope.pin, messagesStatus).then(() => {
-                        cb_0(null);
-                    }, (err) => {
-                        cb_0(err);
-                    });
-                }
-            },
-        ], (err) => {
-            $scope.loading = false;
+        appService.setAllData2($scope.year, $scope.gridOptions.data, (err, data) => {
             if (err) {
-                localStorage.setItem('pin', '');
-                localStorage.setItem('name', '');
-                $scope.error = 'Something went wrong. Please refresh ' + JSON.stringify(err);
+                $scope.loading = false;
+                if (err) {
+                    localStorage.setItem('pin', '');
+                    localStorage.setItem('name', '');
+                    $scope.error = 'Something went wrong. Please refresh ' + JSON.stringify(err);
+                }   
             }
-        });
+            else {
+                console.log('update successful', data);
+                $scope.loading = false;
+            }
+        })
+
+    };
+
+    // Submit Prayer
+    $scope.submitPrayer2 = () => {
+
+        // Set loading equal to true
+        $scope.loading = true;
+
+        appService.setPrayer2($scope.year, $scope.prayer, (err, data) => {
+            if (err) {
+                $scope.loading = false;
+                if (err) {
+                    localStorage.setItem('pin', '');
+                    localStorage.setItem('name', '');
+                    $scope.error = 'Something went wrong. Please refresh ' + JSON.stringify(err);
+                }   
+            }
+            else {
+                console.log('update successful', data);
+                $scope.loading = false;
+            }
+        })
+        
     };
 
     // Submit Prayer
     $scope.submitPrayer = () => {
 
         $scope.loading = true;
-        let raceCondition = false;
 
-        async.series([
-            // Step #1: Get DB prayer and check for race condition
-            (cb_0) => {
-                // Get prayer
-                appService.getPrayer($scope.pin, $scope.year).then((results) => {
-                    // Check race condition
-                    raceCondition = checkRaceCondition(results.data[0]);
-                    cb_0(null);
-                }, (err) => {
-                    // Send error if there's an error
-                    cb_0(err);
-                });
-            },
-            // Step #2: Set prayer
-            (cb_0) => {
-                // Check for race condition
-                if (raceCondition) {
-                    $scope.raceCondition = true;
-                    cb_0(null);
-                }
-                else {
-                    // Set prayer data
-                    const prayerData = [{
-                        prayer: $scope.prayer,
-                        lastUpdatedName: $scope.name,
-                        lastUpdatedTime: new Date().getTime()
-                    }];
-                    // Set prayer
-                    appService.setPrayer($scope.pin, $scope.year, prayerData).then(() => {
-                        // Finish request
-                        cb_0(null);
-                    }, (err) => {
-                        // Send error if there's an error
-                        cb_0(err);
-                    });
-                }
-
-            }
-        ], (err)=> {
-            $scope.loading = false;
+        appService.setPrayer2($scope.year, $scope.prayer, (err, data) => {
             if (err) {
-                // Set error to false
-                $scope.error = 'Something went wrong. Please refresh ' + JSON.stringify(err);
+                console.log('there was an error with prayer', err);
             }
-        });
-    };
-
-    // $scope.updateMongoData = () => {
-        // console.log(tempData.data);
-        // const evenMoreTempData = tempData.data.map(val => {
-        //     return {
-        //         color: val.color,
-        //         comments: val.comments,
-        //         content: val.content,
-        //         corey: val.corey,
-        //         date: val.date,
-        //         devon: val.devon,
-        //         josh: val.josh,
-        //         kenny: val.kenny,
-        //         lastUpdatedName: val.lastUpdatedName,
-        //         lastUpdatedTime: val.lastUpdatedTime,
-        //         leal: val.leal
-        //     }
-        // });
-        //
-        // console.log(evenMoreTempData.slice(4, evenMoreTempData.length));
-        //
-        // appService.putAllData($scope.pin, updateData, (err, results) => {
-        //     if (err) {
-        //         console.log(err);
-        //     }
-        //     else {
-        //         console.log(results);
-        //     }
-        // })
-        // const evenMoreTempData = tempData.data.map(val => {
-        //     return {
-        //         color: val.color,
-        //         comments: val.comments,
-        //         content: val.content,
-        //         corey: val.corey,
-        //         date: val.date,
-        //         devon: val.devon,
-        //         josh: val.josh,
-        //         kenny: val.kenny,
-        //         lastUpdatedName: val.lastUpdatedName,
-        //         lastUpdatedTime: val.lastUpdatedTime,
-        //         leal: val.leal
-        //     }
-        // });
-        //
-        //
-        // const twentyNinteenData = [];
-        //
-        // // declaring variables
-        // var text = '';
-        // var year = 2019;
-        // var firstDay = new Date(year, 0, 1);
-        //
-        //
-        // readingPlan.forEach((val, index) => {
-        //
-        //     // Days
-        //     var curDay = new Date(firstDay.getTime() + (index * 1000 * 60 * 60 * 24));
-        //     var day = curDay.getDate();
-        //     var dayOfWeek = curDay.getDay();
-        //     var weekday;
-        //     var type;
-        //     if (dayOfWeek === 0) {
-        //         type = 'Gospels'; weekday = 'Sunday';
-        //     }
-        //     else if (dayOfWeek === 1) {
-        //         type = 'Law'; weekday = 'Monday';
-        //     }
-        //     else if (dayOfWeek === 2) {
-        //         type = 'History'; weekday = 'Tuesday';
-        //     }
-        //     else if (dayOfWeek === 3) {
-        //         type = 'Psalms'; weekday = 'Wednesday';
-        //     }
-        //     else if (dayOfWeek === 4) {
-        //         type = 'Poetry'; weekday = 'Thursday';
-        //     }
-        //     else if (dayOfWeek === 5) {
-        //         type = 'Prophecy'; weekday = 'Friday';
-        //     }
-        //     else if (dayOfWeek === 6) {
-        //         type = 'Epistles'; weekday = 'Saturday';
-        //     }
-        //
-        //     var month = curDay.getMonth() + 1;
-        //
-        //     twentyNinteenData.push({
-        //         color: "black",
-        //         comments: `${weekday} ${type}.`,
-        //         content: val,
-        //         corey: '',
-        //         date: `${month}/${day}/${year}`,
-        //         devon: '',
-        //         josh: '',
-        //         kenny: '',
-        //         leal: '',
-        //         lastUpdatedName: 'kenny',
-        //         lastUpdatedTime: 1543553009299
-        //     });
-        // });
-        //
-        // // send to dynamo
-        // const allData = evenMoreTempData.concat(twentyNinteenData);
-    // };
-
-    // // Update mongo data 2 (used to make 2020 data)
-    // $scope.updateMongoData = function() {
-    //     var updateData = [];
-    //     for (var i=0; i<400; i++) {
-
-    //     var date = new Date();
-    //     date.setDate(date.getDate() + i);
-
-    //     var month = ('0' + (date.getMonth() + 1)).slice(-2); // add one because month starts at 0
-    //     var day = ('0' + date.getDate()).slice(-2); // 01, 02, etc.
-    //     var year = date.getUTCFullYear(); // 2017, 2018, etc.
-    //     var today = `${month}/${day}/${year}`;
-
-    //     var a = {
-    //         "comments": "",
-    //         "content": "Psalm " + (Math.floor(Math.random() * 150) + 1),
-    //         "corey": "",
-    //         "date": today,
-    //         "devon": "",
-    //         "josh": "",
-    //         "kenny": "",
-    //         "leal": "",
-    //         "color": "",
-    //         "lastUpdatedName": "",
-    //         "lastUpdatedTime": 1577631727281
-    //     };
-
-    //     updateData.push(a);
-
-    //     }
-
-    //     console.log($scope.pin, $scope.year, updateData);
-
-    //     appService.putAllData($scope.pin, $scope.year, updateData, (err, results) => {
-    //         if (err) {
-    //             console.log(err);
-    //         }
-    //         else {
-    //             console.log(results);
-    //         }
-    //     })
-
-    // }
-
-    // used to update 2017 data
-    // $scope.updateMongoData = function() {
-    //     var _2017 = [];
-    //     appService.putAllData($scope.pin, 2017, _2017, (err, results) => {
-    //         if (err) {
-    //             console.log(err);
-    //         }
-    //         else {
-    //             console.log(results);
-    //         }
-    //     })   
-    // }
-
-    // Check race condition
-    const checkRaceCondition = (data) => {
-        // Vars
-        let raceCondition = false;
-        const lastUpdatedName = data.lastUpdatedName || $scope.name;
-        const lastUpdatedTime = data.lastUpdatedTime || new Date(0).getTime();
-        // Check if last update was you
-        if (lastUpdatedName !== $scope.name) {
-            if (lastUpdatedTime > sessionTime) {
-                raceCondition = true;
+            else {
+                console.log('prayer updated', data);
             }
-        }
-        // Return race condition
-        return raceCondition;
+        })
+
     };
 
     // Get the color of the user for the colors of the reading content
@@ -627,39 +310,3 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
     }
 
 }]);
-
-// appService.setPrayer({prayer: 'prayer'}).then(results => {
-//     $scope.loading = false;
-// });
-
-// function compare(a,b) {
-//     if (a.date < b.date)
-//         return -1;
-//     if (a.date > b.date)
-//         return 1;
-//     return 0;
-// }
-//
-// var b = a.sort(compare);
-
-// var b = a.map(val => {
-//
-//     // New date of node server
-//     var date = new Date(val.Date);
-//     var month = ('0' + (date.getMonth() + 1)).slice(-2); // add one because month starts at 0
-//     var day = ('0' + date.getDate()).slice(-2); // 01, 02, etc.
-//     var year = date.getUTCFullYear(); // 2017, 2018, etc.
-//     const today = `${month}/${day}/${year}`;
-//
-//     return {
-//         date: today,
-//         content: val.content,
-//         josh: val.josh,
-//         corey: val.corey,
-//         kenny: val.kenny,
-//         devon: val.devon,
-//         leal: val.leal,
-//         comments: ''
-//     }
-//
-// });
