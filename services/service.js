@@ -7,8 +7,8 @@ app.service('appService', ['$http',  function($http) {
     function setAWSConfig() {
         // Set up AWS
         AWS.config.update({
-            accessKeyId: 'AKIAY4HPHXZPZ6IVY4FA', 
-            secretAccessKey: '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', 
+            accessKeyId: '', 
+            secretAccessKey: '', 
             region: 'us-east-2'
         });
 
