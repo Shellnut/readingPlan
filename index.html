@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+<!DOCTYPE html >
 <html>
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.rawgit.com/angular-ui/bower-ui-grid/master/ui-grid.min.css">
@@ -36,7 +36,7 @@
             <div class="col-sm-7">
                 <label for="text">{{today.content}} Comments</label>
                 <textarea class="form-control" ng-model="today.comments" id="text" rows="13"></textarea><br>
-                <button class="btn btn-primary" ng-disabled="loading || raceCondition" ng-click="submitComment()">Submit</button>
+                <button class="btn btn-primary" ng-disabled="loading || raceCondition" ng-click="submitData()">Submit</button>
             </div>
             <div class="col-sm-5">
                 <label for="prayer">Prayer</label>
@@ -65,6 +65,10 @@
 
 </body>
 
+<!-- AWS -->
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
+
+<!-- Other -->
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script src="https://rawgit.com/msrikanth508/uiGridInlineEditPOC/master/Js/vendor/angular.js"></script>
