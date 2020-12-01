@@ -4,11 +4,79 @@ app.service('appService', ['$http',  function($http) {
     var docClient;
 
     // Set AWS Config
-    function setAWSConfig() {
+    function setAWSConfig(pin) {
+
+        var p1 = pin[0].charCodeAt();
+        var p2 = pin[1].charCodeAt();
+        var p3 = pin[2].charCodeAt();
+        var p4 = pin[3].charCodeAt();
+
+        var accessKeyId = String.fromCharCode(p1+11) +
+            String.fromCharCode(p1+21) +
+            String.fromCharCode(p1+19) +
+            String.fromCharCode(p1+11) +
+            String.fromCharCode(p1+35) +
+            String.fromCharCode(p2-66) +
+            String.fromCharCode(p2-46) +
+            String.fromCharCode(p2-38) +
+            String.fromCharCode(p2-46) +
+            String.fromCharCode(p2-30) +
+            String.fromCharCode(p3+12) +
+            String.fromCharCode(p3+2) +
+            String.fromCharCode(p3-24) +
+            String.fromCharCode(p3-3) +
+            String.fromCharCode(p3-10) +
+            String.fromCharCode(p4-15) +
+            String.fromCharCode(p4-11) +
+            String.fromCharCode(p4-9) +
+            String.fromCharCode(p4-2) +
+            String.fromCharCode(p4+4);
+
+        var secretAccessKey = String.fromCharCode(p4+2) +
+            String.fromCharCode(p4+3) +
+            String.fromCharCode(p4+36) +
+            String.fromCharCode(p4+2) +
+            String.fromCharCode(p4+24) +
+            String.fromCharCode(p4+35) +
+            String.fromCharCode(p4-38) +
+            String.fromCharCode(p4+35) +
+            String.fromCharCode(p4-34) +
+            String.fromCharCode(p4-8) +
+            String.fromCharCode(p3+11) +
+            String.fromCharCode(p3+4) +
+            String.fromCharCode(p3+4) +
+            String.fromCharCode(p3+44) +
+            String.fromCharCode(p3+8) +
+            String.fromCharCode(p3+43) +
+            String.fromCharCode(p3+20) +
+            String.fromCharCode(p3+34) +
+            String.fromCharCode(p3+19) +
+            String.fromCharCode(p3+43) +
+            String.fromCharCode(p2-10) +
+            String.fromCharCode(p2-52) +
+            String.fromCharCode(p2-12) +
+            String.fromCharCode(p2-66) +
+            String.fromCharCode(p2-48) +
+            String.fromCharCode(p2-61) +
+            String.fromCharCode(p2-36) +
+            String.fromCharCode(p2-44) +
+            String.fromCharCode(p2+4) +
+            String.fromCharCode(p2-50) +
+            String.fromCharCode(p1+65) +
+            String.fromCharCode(p1+53) +
+            String.fromCharCode(p1+14) +
+            String.fromCharCode(p1+66) +
+            String.fromCharCode(p1+48) +
+            String.fromCharCode(p1+53) +
+            String.fromCharCode(p1+66) +
+            String.fromCharCode(p1+54) +
+            String.fromCharCode(p1+31) +
+            String.fromCharCode(p1+27);
+
         // Set up AWS
         AWS.config.update({
-            accessKeyId: '', 
-            secretAccessKey: '', 
+            accessKeyId: accessKeyId, 
+            secretAccessKey: secretAccessKey, 
             region: 'us-east-2'
         });
 
@@ -19,9 +87,9 @@ app.service('appService', ['$http',  function($http) {
     // ---------------
     // dynamo
     // ---------------
-    this.setAllData2 = (year, data, cb) => {
+    this.setAllData = (year, data, pin, cb) => {
 
-        setAWSConfig();
+        setAWSConfig(pin);
 
         // Params
         var params = {
@@ -39,9 +107,9 @@ app.service('appService', ['$http',  function($http) {
         return docClient.update(params, cb);
     };
 
-    this.getAllData2 = (year, cb) => {
+    this.getAllData = (year, pin, cb) => {
 
-        setAWSConfig();
+        setAWSConfig(pin);
 
         // Get
         var params = {
@@ -54,42 +122,9 @@ app.service('appService', ['$http',  function($http) {
         return docClient.get(params, cb);
     };
 
-    this.getMessageStatus2 = (cb) => {
-        setAWSConfig();
+    this.getPrayer = (year, pin, cb) => {
 
-        // Params
-        var params = {
-            TableName: "ReadingPlan",
-            Key: {
-                "myPartitionKey": "MessageStatus"
-            }
-        };
-
-        return docClient.get(params, cb);
-    };
-
-    this.setMessageStatus2 = (messagesStatus, cb) => {
-        setAWSConfig();
-
-        // Params
-        var params = {
-            TableName: "ReadingPlan",
-            Key: {
-                "myPartitionKey": "MessageStatus"
-            },
-            UpdateExpression: "set myData = :d",
-            ExpressionAttributeValues:{
-                ":d": JSON.stringify(messagesStatus)
-            },
-            ReturnValues:"UPDATED_NEW"
-        };
-
-        return docClient.update(params, cb);
-    };
-
-    this.getPrayer2 = (year, cb) => {
-
-        setAWSConfig();
+        setAWSConfig(pin);
 
         // Get
         var params = {
@@ -102,10 +137,9 @@ app.service('appService', ['$http',  function($http) {
         return docClient.get(params, cb);
     };
 
-    
-    this.setPrayer2 = (year, data, cb) => {
+    this.setPrayer = (year, data, pin, cb) => {
         
-        setAWSConfig();
+        setAWSConfig(pin);
 
         // Params
         var params = {
@@ -115,36 +149,12 @@ app.service('appService', ['$http',  function($http) {
             },
             UpdateExpression: "set myData = :d",
             ExpressionAttributeValues:{
-                ":d": JSON.stringify(data)
+                ":d": data
             },
             ReturnValues:"UPDATED_NEW"
         };
 
         return docClient.update(params, cb);
     };
-
-
-    // ---------------
-    // mLab
-    // ---------------
-
-    const url = 'https://api.mongolab.com/api/1/databases/mydb/collections/';
-    const apiKey = `?apiKey=7dwZtQjBFYhef4N4WHi6xuTnveN4{pin}`;
-
-    // Reading plan data
-    this.getAllData = (pin, year) => $http.get(`${url}readingPlan${year}${apiKey.replace('{pin}', pin)}`);
-    this.getDailyData = (pin, year, id) => $http.get(`${url}readingPlan${year}/${id}${apiKey.replace('{pin}', pin)}`);
-    this.submit = (pin, year, id, data) => $http.put(`${url}readingPlan${year}/${id}${apiKey.replace('{pin}', pin)}`, data);
-
-    // Prayer
-    this.getPrayer = (pin, year) => $http.get(`${url}prayer${year}${apiKey.replace('{pin}', pin)}`);
-    this.setPrayer = (pin, year, data) => $http.put(`${url}prayer${year}${apiKey.replace('{pin}', pin)}`, data);
-
-    // Daily message status
-    this.setMessageStatus = (pin, data) => $http.put(`${url}messageStatus${apiKey.replace('{pin}', pin)}`, data);
-    this.getMessageStatus = (pin) => $http.get(`${url}messageStatus${apiKey.replace('{pin}', pin)}`);
-
-    // Storing data
-    this.putAllData = (pin, year, data) => $http.put(`${url}readingPlan${year}${apiKey.replace('{pin}', pin)}`, data);
 
 }]);
