@@ -89,7 +89,7 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
             {
                 name: 'content',
                 enableFiltering: true,
-                cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" ><a target="_blank" href="http://esvapi.org/v2/rest/passageQuery?key=IP&passage={{row.entity.content}}&output-format=mp3">{{row.entity.content}}</a></div>`
+                cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" ><a target="_blank" href="https://audio.esv.org/hw/{{row.entity.content}}.mp3">{{row.entity.content}}</a></div>`
             },
             {
                 name: 'josh',
