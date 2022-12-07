@@ -18,7 +18,7 @@
         "angular-ui-grid": "^4.0.6",
         "body-parser": "^1.17.2",
         "bootstrap": "^3.3.7",
-        "express": "^4.15.4",
+        "express": "^4.17.3",
         "font-awesome": "^4.7.0",
         "jquery": "^3.2.1",
         "moment": "^2.18.1",
