@@ -91,14 +91,14 @@ app.controller('homeCtrl', ['$scope', '$http', '$window', 'uiGridConstants', 'ap
                 enableFiltering: true,
                 cellTemplate: `<div class="ui-grid-cell-contents" ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" ><a target="_blank" href="https://audio.esv.org/hw/{{row.entity.content}}.mp3">{{row.entity.content}}</a></div>`
             },
-            // {
-            //     name: 'josh',
-            //     headerCellClass: 'josh',
-            //     enableFiltering: false,
-            //     cellEditableCondition: false,
-            //     type: 'boolean',
-            //     cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.submitData(row.entity)" ng-model="row.entity.josh"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`
-            // },
+            {
+                name: 'josh',
+                headerCellClass: 'josh',
+                enableFiltering: false,
+                cellEditableCondition: false,
+                type: 'boolean',
+                cellTemplate: `<div ng-class="{'bg-success': row.entity.date === grid.appScope.today.date}" class="ui-grid-cell-contents"><select class="select" ng-change="grid.appScope.submitData(row.entity)" ng-model="row.entity.josh"><option value=""></option><option value="r">R</option><option value="x">X</option></select></div>`
+            },
             // {
             //     name: 'corey',
             //     headerCellClass: 'corey',
