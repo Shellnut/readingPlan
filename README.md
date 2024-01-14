@@ -1,14 +1,4 @@
-Collaborative Bible Reading Plan
+Bible Reading Plan
 ============
-
-The purpose of the UI is to have multiple users be able to share insights from the bible reading plan.
-
-Install
+Yearly bible reading plan with link to audio
 ------------
-
-~~~
-> git clone https://github.com/shellnut/reading-plan.git
-> npm install
-> node server.js
-Navigate to localhost:7000
-~~~
