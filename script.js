@@ -34,7 +34,7 @@ app.controller('homeCtrl', ['$scope', function($scope) {
                 priority: 0
             },
             type: 'date',
-            width: '175',
+            width: '150',
             filter: {
                 condition: (searchTerm, cellValue) => new Date(searchTerm.split(String.fromCharCode(92)).join('')) <= new Date(cellValue),
                 placeholder: 'date',
