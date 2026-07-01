@@ -725,7 +725,7 @@ var readingContentLeapYear = [
     },
     {
         "date": "06/30/2024",
-        "content": "Obadiah 1, Psalms 82-83"
+        "content": "Obadiah 1-21, Psalms 82-83"
     },
     {
         "date": "07/01/2024",
